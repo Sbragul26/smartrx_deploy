@@ -25,11 +25,14 @@ load_dotenv()
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins to prevent CORS issues
 
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+model_path = os.path.join(BASE_DIR, "medicine_model.pkl")
+le_path = os.path.join(BASE_DIR, "label_encoders.pkl")
 # Load the trained model and label encoders
 try:
-    with open(r"C:\Users\kanishkhaa\OneDrive\Desktop\codher\ml_model\medicine_model.pkl", "rb") as model_file:
+    with open(model_path, "rb") as model_file:
         model = pickle.load(model_file)
-    with open(r"C:\Users\kanishkhaa\OneDrive\Desktop\codher\ml_model\label_encoders.pkl", "rb") as le_file:
+    with open(le_path, "rb") as le_file:
         label_encoders = pickle.load(le_file)
 except FileNotFoundError as e:
     app.logger.error(f"Model or label encoder file not found: {e}")
