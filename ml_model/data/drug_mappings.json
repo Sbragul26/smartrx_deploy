@@ -1,0 +1,22 @@
+{
+    "ibuprofen": "Non-steroidal anti-inflammatory drug (NSAID)",
+    "acetaminophen": "Paracetamol (pain reliever)",
+    "amoxicillin": "Penicillin antibiotic",
+    "lisinopril": "ACE inhibitor",
+    "metformin": "Anti-diabetic medication",
+    "atorvastatin": "Statin (cholesterol-lowering)",
+    "losartan": "Angiotensin II receptor blocker",
+    "omeprazole": "Proton pump inhibitor",
+    "amlodipine": "Calcium channel blocker",
+    "levothyroxine": "Thyroid hormone",
+    "metoprolol": "Beta blocker",
+    "albuterol": "Bronchodilator",
+    "azithromycin": "Macrolide antibiotic",
+    "citalopram": "SSRI antidepressant",
+    "simvastatin": "Statin (cholesterol-lowering)",
+    "loratadine": "Antihistamine",
+    "sertraline": "SSRI antidepressant",
+    "hydrochlorothiazide": "Thiazide diuretic",
+    "warfarin": "Anticoagulant",
+    "**": "Please provide the medication name.  I need the medication name to tell you its generic name or drug classification."
+}

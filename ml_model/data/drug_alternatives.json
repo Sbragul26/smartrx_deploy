@@ -123,5 +123,8 @@
         "Anacin Advanced Headache Formula",
         "Anacin Aspirin Regimen",
         "Miniprin"
+    ],
+    "**": [
+        "Please provide the brand name or medication you want alternatives for."
     ]
 }

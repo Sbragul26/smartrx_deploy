@@ -3,7 +3,6 @@ import cv2
 import pytesseract
 import numpy as np
 import google.generativeai as genai
-import pickle
 import pandas as pd
 import json
 import requests
@@ -18,16 +17,6 @@ from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
 from reportlab.lib.styles import getSampleStyleSheet
 from dotenv import load_dotenv
 
-import tensorflow as tf
-gpus = tf.config.experimental.list_physical_devices('GPU')
-for gpu in gpus:
-    tf.config.experimental.set_memory_growth(gpu, True)
-
-# Limit CPU memory growth
-tf.config.set_logical_device_configuration(
-    tf.config.list_physical_devices('CPU')[0],
-    [tf.config.LogicalDeviceConfiguration(memory_limit=300)]
-)
 # Load environment variables
 load_dotenv()
 
@@ -36,17 +25,6 @@ app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins to prevent CORS issues
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-model_path = os.path.join(BASE_DIR, "medicine_model.pkl")
-le_path = os.path.join(BASE_DIR, "label_encoders.pkl")
-# Load the trained model and label encoders
-try:
-    with open(model_path, "rb") as model_file:
-        model = pickle.load(model_file)
-    with open(le_path, "rb") as le_file:
-        label_encoders = pickle.load(le_file)
-except FileNotFoundError as e:
-    app.logger.error(f"Model or label encoder file not found: {e}")
-    raise
 
 # Configure Google Generative AI API
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
@@ -75,6 +53,30 @@ PRESCRIPTIONS_FILE = os.path.join(DATA_FOLDER, 'prescriptions.json')
 MEDICATIONS_FILE = os.path.join(DATA_FOLDER, 'medications.json')
 REMINDERS_FILE = os.path.join(DATA_FOLDER, 'reminders.json')
 ALTERNATIVES_FILE = os.path.join(DATA_FOLDER, 'drug_alternatives.json')
+DRUG_MAPPINGS_FILE = os.path.join(DATA_FOLDER, 'drug_mappings.json')
+
+# Common drug mappings - this replaces the ML model's functionality
+DEFAULT_DRUG_MAPPINGS = {
+    "ibuprofen": "Non-steroidal anti-inflammatory drug (NSAID)",
+    "acetaminophen": "Paracetamol (pain reliever)",
+    "amoxicillin": "Penicillin antibiotic",
+    "lisinopril": "ACE inhibitor",
+    "metformin": "Anti-diabetic medication",
+    "atorvastatin": "Statin (cholesterol-lowering)",
+    "losartan": "Angiotensin II receptor blocker",
+    "omeprazole": "Proton pump inhibitor",
+    "amlodipine": "Calcium channel blocker",
+    "levothyroxine": "Thyroid hormone",
+    "metoprolol": "Beta blocker",
+    "albuterol": "Bronchodilator",
+    "azithromycin": "Macrolide antibiotic",
+    "citalopram": "SSRI antidepressant",
+    "simvastatin": "Statin (cholesterol-lowering)",
+    "loratadine": "Antihistamine",
+    "sertraline": "SSRI antidepressant",
+    "hydrochlorothiazide": "Thiazide diuretic",
+    "warfarin": "Anticoagulant",
+}
 
 def allowed_file(filename):
     return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
@@ -98,16 +100,42 @@ def extract_text(image_path):
         return "Error extracting text"
 
 def predict_generic_name(medicine_name):
+    """
+    Simplified version of the ML-based predictor. Uses a dictionary lookup instead.
+    """
     try:
-        if medicine_name in label_encoders["MEDICINE_NAME"].classes_:
-            medicine_encoded = label_encoders["MEDICINE_NAME"].transform([medicine_name])
-            predicted_label = model.predict(pd.DataFrame({"MEDICINE_NAME": medicine_encoded}))
-            generic_name = label_encoders["GENERIC_NAME"].inverse_transform(predicted_label)[0]
-            return generic_name
-        return "Unknown Medicine"
+        # Load drug mappings from file if it exists, otherwise use defaults
+        drug_mappings = load_json(DRUG_MAPPINGS_FILE, DEFAULT_DRUG_MAPPINGS)
+        
+        # Try exact match
+        medicine_name_lower = medicine_name.lower()
+        if medicine_name_lower in drug_mappings:
+            return drug_mappings[medicine_name_lower]
+        
+        # Try partial match
+        for drug, generic in drug_mappings.items():
+            if drug in medicine_name_lower or medicine_name_lower in drug:
+                return generic
+                
+        # If no match, ask gemini for help
+        try:
+            model = genai.GenerativeModel("gemini-1.5-flash")
+            prompt = f"What is the generic name or drug classification for this medication: {medicine_name}? Keep your answer short, 1-2 sentences maximum."
+            response = model.generate_content(prompt)
+            answer = response.text.strip() if response.text else "Unknown classification"
+            
+            # Save this new mapping for future use
+            drug_mappings[medicine_name_lower] = answer
+            save_json(DRUG_MAPPINGS_FILE, drug_mappings)
+            
+            return answer
+        except Exception as e:
+            app.logger.error(f"Error getting drug info from AI: {e}")
+            return "Unknown medication"
+            
     except Exception as e:
         app.logger.error(f"Error predicting generic name: {e}")
-        return "Prediction Error"
+        return "Unknown medication"
 
 def organize_text_with_ai(text):
     try:
@@ -118,24 +146,49 @@ def organize_text_with_ai(text):
         - *Doctor Information* (Name, Hospital/Clinic, License Number if available)
         - *Medications* (Medicine Name, Dosage, Frequency)
         - *Special Instructions* (Dietary advice, warnings, or extra instructions)
+        
+        Also, extract and list only the medication names from the prescription.
+        
         Prescription Text: {text}
         """
         response = model.generate_content(prompt)
         structured_text = response.text.strip() if response.text else "No response from AI."
         
+        # Extract medication names with simpler approach
         extracted_medicines = []
         for line in structured_text.split('\n'):
-            if "Medicine Name" in line:
-                med_name = line.split("Medicine Name:")[-1].split(",")[0].strip()
-                extracted_medicines.append(med_name)
+            if "Medicine Name" in line or "Medication" in line:
+                # Extract medicine name from the line
+                parts = re.split(r':|,|\(', line, 1)
+                if len(parts) > 1:
+                    med_name = parts[1].strip()
+                    # Remove any dosage information
+                    med_name = re.split(r'\d|\s+mg|\s+mcg|\s+ml|\s+tablet', med_name)[0].strip()
+                    extracted_medicines.append(med_name)
         
+        # If no medicines were found by the parsing logic above
+        if not extracted_medicines:
+            # Ask AI specifically for medicine names
+            try:
+                prompt = f"Extract ONLY the medication names from this prescription: {text}"
+                response = model.generate_content(prompt)
+                meds_text = response.text.strip()
+                potential_meds = [m.strip() for m in re.split(r'[\n,]', meds_text) if m.strip()]
+                extracted_medicines = [m for m in potential_meds if len(m) > 3 and not m.startswith('-')]
+            except Exception as e:
+                app.logger.error(f"Error extracting medicines with AI: {e}")
+        
+        # Get generic predictions for each extracted medicine
         generic_predictions = {med: predict_generic_name(med) for med in extracted_medicines}
+        
         return {"structured_text": structured_text, "generic_predictions": generic_predictions}
     except Exception as e:
         app.logger.error(f"Error organizing text with AI: {e}")
         return {"structured_text": "Error processing text", "generic_predictions": {}}
 
-def load_json(file_path, default=[]):
+def load_json(file_path, default=None):
+    if default is None:
+        default = []
     try:
         if os.path.exists(file_path):
             with open(file_path, 'r') as f:
@@ -194,18 +247,44 @@ def get_brand_names(rxcui):
 
 def fetch_alternatives(drug_names):
     result = defaultdict(list)
+    
+    # First check our stored alternatives
+    stored_alternatives = load_json(ALTERNATIVES_FILE, {})
+    
     for drug in drug_names:
+        drug_lower = drug.lower()
         app.logger.info(f"Searching alternatives for: {drug}...")
-        rxcui = get_rxcui(drug)
+        
+        # Check if we already have this drug in our stored alternatives
+        if drug_lower in stored_alternatives and stored_alternatives[drug_lower]:
+            result[drug_lower] = stored_alternatives[drug_lower]
+            continue
+            
+        rxcui = get_rxcui(drug_lower)
         if not rxcui:
             app.logger.warning(f"RxCUI not found for '{drug}'")
+            # Fallback to AI for suggestions
+            try:
+                model = genai.GenerativeModel("gemini-1.5-flash")
+                prompt = f"List 3-5 alternative brand names or medications similar to {drug}. Format as a comma-separated list with no explanations."
+                response = model.generate_content(prompt)
+                alternatives = [alt.strip() for alt in response.text.split(',')]
+                if alternatives:
+                    result[drug_lower] = alternatives
+                    stored_alternatives[drug_lower] = alternatives
+            except Exception as e:
+                app.logger.error(f"Error getting alternatives from AI for {drug}: {e}")
             continue
         brands = get_brand_names(rxcui)
         if brands:
             app.logger.info(f"Found {len(brands)} alternatives for '{drug}'")
-            result[drug] = brands
+            result[drug_lower] = brands
+            stored_alternatives[drug_lower] = brands
         else:
             app.logger.warning(f"No brand names found for '{drug}'")
+    
+    # Save updated alternatives
+    save_json(ALTERNATIVES_FILE, stored_alternatives)
     return result
 
 @app.route('/upload', methods=['POST'])

@@ -1,1 +1,9 @@
-[]
+[
+    {
+        "id": 1,
+        "name": "**",
+        "description": "Please provide the medication name.  I need the medication name to tell you its generic name or drug classification.",
+        "caution": "Take as directed",
+        "sideEffects": "Consult doctor"
+    }
+]
