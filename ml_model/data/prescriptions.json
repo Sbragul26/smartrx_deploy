@@ -7,5 +7,23 @@
         "generic_predictions": {
             "**": "Please provide the medication name.  I need the medication name to tell you its generic name or drug classification."
         }
+    },
+    {
+        "id": 2,
+        "filename": "sasi.png",
+        "date": "2025-04-16",
+        "structured_text": "**Patient Information:**\n\n* Name: Ms. Sasikala. S\n* Age: 31\n\n**Doctor Information:**\n\n* Name: Dr. M.S. Krishna Meera MD (DVL), EADV\n* Clinic: SKIN & HAIR CLINIC / Reflect Skin & Hair Clinic\n* Registration Number: 106125 (TNMC)\n* Name: Dr. S. Divya MD (DVL)\n* Registration Number: 112496 (TNMC)\n* Address: No.2, Ram Lakshman Nagar, Near National Model School, Sowripalayam post, Coimbatore 641028.\n* Phone: +91 422 356 6135 / +91-63801 36936\n* Email: skinreflect@gmail.com\n* Website: www.thereflectclinic.com\n\n**Medications:**\n\n* Enkor-D sachets: 1 sachet daily\n* Immunore forte: Dosage and frequency unclear (possibly one per day based on \"once\" notation)\n* D. Rusi 60k: Weekly once for 4 weeks\n* Avarta antiageing Cream: Apply nightly\n\n\n**Special Instructions:**\n\n* Diagnosis: Oral lichen planus reticulon pattern on one buccal mucosa.\n* Date: 18/02/2025\n\n\n**Medication Names Only:**\n\n* Enkor-D\n* Immunore forte\n* D. Rusi 60k\n* Avarta antiageing Cream",
+        "generic_predictions": {
+            "**": "Please provide the medication name.  I need the medication name to tell you its generic name or drug classification."
+        }
+    },
+    {
+        "id": 3,
+        "filename": "sasi.png",
+        "date": "2025-04-16",
+        "structured_text": "**Patient Information:**\n\n* Name: Ms. Sasikala. S\n* Age: 31\n\n**Doctor Information:**\n\n* Name: Dr. M.S. Krishna Meera MD (DVL), EADV\n* Clinic: SKIN & HAIR CLINIC / Reflect Skin & Hair Clinic\n* Registration Number: 106125 (TNMC)\n* Address: No.2, Ram Lakshman Nagar, Near National Model School, Sowripalayam post, Coimbatore 641028.\n* Phone: +91 422 356 6135, +91-63801 36936\n* Email: skinreflect@gmail.com\n* Website: www.thereflectclinic.com\n\n\n**Medications:**\n\n* **Enkor-D sachets:** 1 sachet once a day.\n* **Immunore forte:**  Dosage unclear (possibly 1 dose, as indicated by \"once\"), frequency unclear (possibly daily for 5 days, based on \"x5 days\").\n* **D. Rusi 60k:** Once weekly for 4 weeks.\n* **Avarta antiageing cream:** Apply nightly.\n\n\n**Special Instructions:**\n\n* Diagnosis: Oral lichen planus reticulon pattern on one buccal mucosa. (This isn't an instruction, but important context.)\n* Prescription Date: 18/02/2025  (Not an instruction, but provided for completeness.)\n\n\n**Medication Names Only:**\n\n* Enkor-D\n* Immunore forte\n* D. Rusi 60k\n* Avarta antiageing cream",
+        "generic_predictions": {
+            "**": "Please provide the medication name.  I need the medication name to tell you its generic name or drug classification."
+        }
     }
 ]

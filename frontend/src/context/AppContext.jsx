@@ -1,5 +1,8 @@
 import React, { createContext, useState, useEffect, useContext } from 'react';
 
+// Define API base URL for backend
+const API_BASE_URL = "https://smartrx-hws1.onrender.com";
+
 export const AppContext = createContext();
 
 export const AppProvider = ({ children }) => {
@@ -22,20 +25,20 @@ export const AppProvider = ({ children }) => {
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
-        const prescriptionsRes = await fetch('http://localhost:5000/prescriptions');
+        const prescriptionsRes = await fetch(`${API_BASE_URL}/prescriptions`);
         const prescriptionsData = await prescriptionsRes.json();
         setPrescriptionHistory(prescriptionsData);
 
-        const medicationsRes = await fetch('http://localhost:5000/medications');
+        const medicationsRes = await fetch(`${API_BASE_URL}/medications`);
         const medicationsData = await medicationsRes.json();
         setMedicationData(medicationsData);
 
-        const remindersRes = await fetch('http://localhost:5000/reminders');
+        const remindersRes = await fetch(`${API_BASE_URL}/reminders`);
         const remindersData = await remindersRes.json();
         setReminders(remindersData);
         
         try {
-          const userRes = await fetch('http://localhost:5000/profile');
+          const userRes = await fetch(`${API_BASE_URL}/profile`);
           const userProfileData = await userRes.json();
           if (userProfileData) {
             setUserData(userProfileData);
@@ -55,7 +58,7 @@ export const AppProvider = ({ children }) => {
     setUserData(updatedData);
     
     try {
-      const response = await fetch('http://localhost:5000/user-profile', {
+      const response = await fetch(`${API_BASE_URL}/user-profile`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -70,7 +73,7 @@ export const AppProvider = ({ children }) => {
 
   const deletePrescription = async (prescriptionId) => {
     try {
-      const response = await fetch(`http://localhost:5000/prescriptions/${prescriptionId}`, {
+      const response = await fetch(`${API_BASE_URL}/prescriptions/${prescriptionId}`, {
         method: 'DELETE',
         headers: {
           'Content-Type': 'application/json',
@@ -80,11 +83,11 @@ export const AppProvider = ({ children }) => {
       if (response.ok) {
         setPrescriptionHistory(prev => prev.filter(prescription => prescription.id !== prescriptionId));
         // Update medications and reminders after deletion
-        const medicationsRes = await fetch('http://localhost:5000/medications');
+        const medicationsRes = await fetch(`${API_BASE_URL}/medications`);
         const medicationsData = await medicationsRes.json();
         setMedicationData(medicationsData);
 
-        const remindersRes = await fetch('http://localhost:5000/reminders');
+        const remindersRes = await fetch(`${API_BASE_URL}/reminders`);
         const remindersData = await remindersRes.json();
         setReminders(remindersData);
         
@@ -99,6 +102,20 @@ export const AppProvider = ({ children }) => {
     }
   };
 
+  // Utility function for making API calls to the backend
+  const fetchFromBackend = async (endpoint, options = {}) => {
+    try {
+      const response = await fetch(`${API_BASE_URL}${endpoint}`, options);
+      if (!response.ok) {
+        throw new Error(`API error: ${response.status}`);
+      }
+      return await response.json();
+    } catch (error) {
+      console.error(`Error with API call to ${endpoint}:`, error);
+      throw error;
+    }
+  };
+
   return (
     <AppContext.Provider value={{ 
       userData,
@@ -109,7 +126,9 @@ export const AppProvider = ({ children }) => {
       setMedicationData, 
       reminders, 
       setReminders,
-      deletePrescription
+      deletePrescription,
+      fetchFromBackend,
+      API_BASE_URL
     }}>
       {children}
     </AppContext.Provider>

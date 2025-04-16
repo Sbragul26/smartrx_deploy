@@ -22,7 +22,7 @@ load_dotenv()
 
 # Initialize Flask app
 app = Flask(__name__)
-CORS(app, resources={r"/*": {"origins": "*"}})  # Allow all origins to prevent CORS issues
+CORS(app, resources={r"/*": {"origins": ["https://your-vercel-app-url.vercel.app", "http://localhost:3000"]}})
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
@@ -464,7 +464,7 @@ def generate_prescription_doc():
         story.append(Paragraph(f"Generated: {timestamp}", styles['Normal']))
 
         doc.build(story)
-        url = f"http://localhost:5000/docs/{file_name}"
+        url = f"https://smartrx-hws1.onrender.com/docs/{file_name}"  #changed for connection of fb.
         return jsonify({"url": url})
     except Exception as e:
         app.logger.error(f"Error generating prescription doc: {e}")
