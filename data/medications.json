@@ -1,9 +1,0 @@
-[
-    {
-        "id": 1,
-        "filename": "img.png",
-        "date": "2025-04-14",
-        "structured_text": "**Patient Information:**\n\n* Name: Mr. Philip John\n* Age: 42\n* Gender: Male\n\n**Doctor Information:**\n\n* Name: Dr. Pulmo Doctor\n* Hospital/Clinic: ZZZ Hospitals, Any City\n* License Number: 99999 (Tamil Nadu Medical Council)\n* Qualifications: M.B.B.S, M.D (Chest), Consultant Pulmonologist\n\n\n**Medications:**\n\n* **SALBAIR TRANSHALER INHALER:** 1-0-0-1 (Levosalbutamol)\n* **MOXCLAV 625 TABLET:** 1-1-0-1 for 5 days (Amoxicillin 500mg + Clavulanic Acid 125mg)\n* **MAXITHRAL 500 TABLET:** 1-0-0-0 for 3 days (Azithromycin 500mg)\n* **MONTEK LC TABLET:** 0-0-0-1 for 5 days (Montelukast 10mg + Levocetirizine)\n* **SOMPRAZ 20 TABLET:** 1-0-0-1 for 5 days (Esomeprazole 20mg)\n\n**Special Instructions:**\n\n* Next Review Date: Monday, 23 April 2018, 05:30 PM\n* Do not refill more than once.\n* For appointments call: +91 98946 22998\n* Current Diagnoses: Asthma - COPD Overlap (Partially Controlled), Acute febrile illness - URTI (Partially Controlled).\n\n**(Note:  The prescription contains some illegible/unclear parts that I have attempted to interpret as best as possible, such as medication names and durations.  It's crucial the patient confirms these details with the prescribing doctor or pharmacist to avoid any errors.)**",
-        "generic_predictions": {}
-    }
-]
